@@ -1849,6 +1849,24 @@ label.textColor = [UIColor colorWithRed:173/255.0
 
 %end
 
+%hook AWETemplatePlayletView
+
+- (void)layoutSubviews {
+    %orig;
+
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideTemplatePlaylet"]) {
+        // 找到父视图并隐藏
+        UIView *parentView = self.superview;
+        if (parentView) {
+            parentView.hidden = YES;
+        } else {
+            self.hidden = YES;
+        }
+    }
+}
+
+%end
+
 %hook AWETemplateHotspotView
 
 - (void)layoutSubviews {
@@ -2358,27 +2376,13 @@ label.textColor = [UIColor colorWithRed:173/255.0
 
 %end
 
+static CGFloat stream_frame_y = 0;
+
 %hook AWEElementStackView
 static CGFloat right_tx = 0;
 static CGFloat left_tx = 0;
 static CGFloat currentScale = 1.0;
 
-- (void)viewDidAppear:(BOOL)animated {
-    %orig;
-        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableFullScreen"]) {
-        UIResponder *nextResponder = [self nextResponder];
-        if ([nextResponder isKindOfClass:[UIView class]]) {
-            UIView *parentView = (UIView *)nextResponder;
-            UIViewController *viewController = [parentView firstAvailableUIViewController];
-            
-            if ([viewController isKindOfClass:%c(AWELiveNewPreStreamViewController)]) {
-                CGRect frame = parentView.frame;
-                frame.origin.y -= 83;
-                parentView.frame = frame;
-            }
-        }
-    }
-}
 - (void)viewWillAppear:(BOOL)animated {
     %orig;
         if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableFullScreen"]) {
@@ -2388,14 +2392,33 @@ static CGFloat currentScale = 1.0;
             UIViewController *viewController = [parentView firstAvailableUIViewController];
             
             if ([viewController isKindOfClass:%c(AWELiveNewPreStreamViewController)]) {
-                CGRect frame = parentView.frame;
-                frame.origin.y -= 83;
-                parentView.frame = frame;
+                CGRect frame = self.frame;
+                if (stream_frame_y != 0){
+                    frame.origin.y == stream_frame_y; 
+                    self.frame = frame;
+                }
             }
         }
     }
 }
-
+- (void)viewDidAppear:(BOOL)animated {
+    %orig;
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableFullScreen"]) {
+        UIResponder *nextResponder = [self nextResponder];
+        if ([nextResponder isKindOfClass:[UIView class]]) {
+            UIView *parentView = (UIView *)nextResponder;
+            UIViewController *viewController = [parentView firstAvailableUIViewController];
+            
+            if ([viewController isKindOfClass:%c(AWELiveNewPreStreamViewController)]) {
+                CGRect frame = self.frame;
+                if (stream_frame_y != 0){
+                    frame.origin.y == stream_frame_y; 
+                    self.frame = frame;
+                }
+            }
+        }
+    }
+}
 - (void)layoutSubviews {
     %orig;
 
@@ -2406,9 +2429,10 @@ static CGFloat currentScale = 1.0;
             UIViewController *viewController = [parentView firstAvailableUIViewController];
             
             if ([viewController isKindOfClass:%c(AWELiveNewPreStreamViewController)]) {
-                CGRect frame = parentView.frame;
+                CGRect frame = self.frame;
                 frame.origin.y -= 83;
-                parentView.frame = frame;
+                stream_frame_y = frame.origin.y;
+                self.frame = frame;
             }
         }
     }
