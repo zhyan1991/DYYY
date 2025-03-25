@@ -935,6 +935,20 @@
 
 %end
 
+//移除下面推荐框黑条
+%hook AWEPlayInteractionRelatedVideoView
+- (void)layoutSubviews {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideAntiAddictedNotice"]) {
+        if ([self respondsToSelector:@selector(removeFromSuperview)]) {
+            [self removeFromSuperview]; 
+        }
+        self.hidden = YES;
+        return; 
+    }
+    %orig;
+}
+%end
+
 %hook AWENormalModeTabBarBadgeContainerView
 
 - (void)layoutSubviews {
@@ -1414,7 +1428,6 @@
     return %orig;
 }
 
-//MARK: 视频显示进度条以及视频进度秒数
 //MARK: 视频显示进度条以及视频进度秒数
 - (void)setLimitUpperActionArea:(BOOL)arg1 {
     %orig;
@@ -2349,6 +2362,40 @@ label.textColor = [UIColor colorWithRed:173/255.0
 static CGFloat right_tx = 0;
 static CGFloat left_tx = 0;
 static CGFloat currentScale = 1.0;
+
+- (void)viewDidAppear:(BOOL)animated {
+    %orig;
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableFullScreen"]) {
+        UIResponder *nextResponder = [self nextResponder];
+        if ([nextResponder isKindOfClass:[UIView class]]) {
+            UIView *parentView = (UIView *)nextResponder;
+            UIViewController *viewController = [parentView firstAvailableUIViewController];
+            
+            if ([viewController isKindOfClass:%c(AWELiveNewPreStreamViewController)]) {
+                CGRect frame = parentView.frame;
+                frame.origin.y -= 83;
+                parentView.frame = frame;
+            }
+        }
+    }
+}
+- (void)viewWillAppear:(BOOL)animated {
+    %orig;
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableFullScreen"]) {
+        UIResponder *nextResponder = [self nextResponder];
+        if ([nextResponder isKindOfClass:[UIView class]]) {
+            UIView *parentView = (UIView *)nextResponder;
+            UIViewController *viewController = [parentView firstAvailableUIViewController];
+            
+            if ([viewController isKindOfClass:%c(AWELiveNewPreStreamViewController)]) {
+                CGRect frame = parentView.frame;
+                frame.origin.y -= 83;
+                parentView.frame = frame;
+            }
+        }
+    }
+}
+
 - (void)layoutSubviews {
     %orig;
 
@@ -2359,9 +2406,9 @@ static CGFloat currentScale = 1.0;
             UIViewController *viewController = [parentView firstAvailableUIViewController];
             
             if ([viewController isKindOfClass:%c(AWELiveNewPreStreamViewController)]) {
-                CGRect frame = self.frame;
+                CGRect frame = parentView.frame;
                 frame.origin.y -= 83;
-                self.frame = frame;
+                parentView.frame = frame;
             }
         }
     }
