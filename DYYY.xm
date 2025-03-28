@@ -2034,6 +2034,24 @@ label.textColor = [UIColor colorWithRed:173/255.0
 
 %end
 
+%hook AWEStoryProgressSlideView
+
+- (void)layoutSubviews {
+    %orig;
+
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideStoryProgressSlide"]) {
+        // 找到父视图并隐藏
+        UIView *parentView = self.superview;
+        if (parentView) {
+            parentView.hidden = YES;
+        } else {
+            self.hidden = YES;
+        }
+    }
+}
+
+%end
+
 %hook AWETemplateHotspotView
 
 - (void)layoutSubviews {
