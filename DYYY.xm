@@ -954,7 +954,7 @@
 //移除同城吃喝玩乐提示框
 %hook AWENearbySkyLightCapsuleView
 - (void)layoutSubviews {
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideCapsuleView"]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideNearbyCapsuleView"]) {
         if ([self respondsToSelector:@selector(removeFromSuperview)]) {
             [self removeFromSuperview];
         }
@@ -1216,23 +1216,58 @@
             [self removeFromSuperview];
             return;
         }
+        
+        // 隐藏点赞数值标签
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideLikeBLabel"]) {
+            for (UIView *subview in self.subviews) {
+                if ([subview isKindOfClass:[UILabel class]]) {
+                    subview.hidden = YES;
+                }
+            }
+        }
     } else if ([accessibilityLabel isEqualToString:@"评论"]) {
         if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideCommentButton"]) {
             [self removeFromSuperview];
             return;
+        }
+        
+        // 隐藏评论数值标签
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideCommentLabel"]) {
+            for (UIView *subview in self.subviews) {
+                if ([subview isKindOfClass:[UILabel class]]) {
+                    subview.hidden = YES;
+                }
+            }
         }
     } else if ([accessibilityLabel isEqualToString:@"分享"]) {
         if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideShareButton"]) {
             [self removeFromSuperview];
             return;
         }
+        
+        // 隐藏分享数值标签
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideShareLabel"]) {
+            for (UIView *subview in self.subviews) {
+                if ([subview isKindOfClass:[UILabel class]]) {
+                    subview.hidden = YES;
+                }
+            }
+        }
     } else if ([accessibilityLabel isEqualToString:@"收藏"]) {
         if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideCollectButton"]) {
             [self removeFromSuperview];
             return;
         }
+        
+        // 隐藏收藏数值标签
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideCollectLabel"]) {
+            for (UIView *subview in self.subviews) {
+                if ([subview isKindOfClass:[UILabel class]]) {
+                    subview.hidden = YES;
+                }
+            }
+        }
     }
-
 }
 
 %end
@@ -2044,7 +2079,6 @@ label.textColor = [UIColor colorWithRed:173/255.0
     %orig;
 
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideQuqishuiting"]) {
-        // 找到父视图并隐藏
         UIView *parentView = self.superview;
         if (parentView) {
             parentView.hidden = YES;
@@ -3070,7 +3104,7 @@ static BOOL isDownloadFlied = NO;
 
 %hook AWEConcernSkylightCapsuleView
 - (void)setHidden:(BOOL)hidden {
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHidenCapsuleView"]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHidenConcernCapsuleView"]) {
         hidden = YES;
     }
 
@@ -3461,20 +3495,15 @@ static BOOL isDownloadFlied = NO;
 // 隐藏顶部直播视图 - 添加条件判断
 - (void)showSkylight:(BOOL)arg0 animated:(BOOL)arg1 actionMethod:(unsigned long long)arg2 {
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHidenLiveView"]) {
-        // 若开关开启则拦截方法，不执行原逻辑
         return;
     }
-    // 否则执行原始方法
     %orig(arg0, arg1, arg2);
 }
 
-// 强制隐藏 Skylight 显示状态 - 动态控制参数
 - (void)updateIsSkylightShowing:(BOOL)arg0 {
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHidenLiveView"]) {
-        // 开关开启时强制隐藏（参数设为 NO）
         %orig(NO);
     } else {
-        // 开关关闭时保持原有状态传递
         %orig(arg0);
     }
 }
@@ -3534,12 +3563,11 @@ static BOOL isDownloadFlied = NO;
 //隐藏话题
 %hook AWEPlayInteractionTemplateButtonGroup
 - (void)layoutSubviews {
-    // 类型安全检查 + 隐藏逻辑
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideTemplateGroup"]) {
         if ([self respondsToSelector:@selector(removeFromSuperview)]) {
             [self removeFromSuperview];
         }
-        self.hidden = YES; // 隐藏更彻底
+        self.hidden = YES; 
         return;
     }
     %orig;
@@ -3561,7 +3589,26 @@ static BOOL isDownloadFlied = NO;
         label.hidden = YES;
         return;
     }
-    %orig; // 保持原有逻辑不变
+    %orig;
+}
+%end
+
+//隐藏点击进入直播间
+%hook AWELiveFeedStatusLabel
+- (void)layoutSubviews {
+    %orig;
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideEnterLive"]) {
+        UIView *parentView = self.superview;
+        UIView *grandparentView = parentView.superview;
+        
+        if (grandparentView) {
+            grandparentView.hidden = YES;
+        } else if (parentView) {
+            parentView.hidden = YES;
+        } else {
+            self.hidden = YES;
+        }
+    }
 }
 %end
 
@@ -3569,15 +3616,35 @@ static BOOL isDownloadFlied = NO;
 %hook AWEIMCellLiveStatusContainerView
 
 - (void)p_initUI {
-    if (![[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYFamiliar"]) %orig;
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYGroupLiving"]) %orig;
 }
 %end
 
+%hook AWELiveStatusIndicatorView
+
+- (void)layoutSubviews {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYGroupLiving"]) {
+        if ([self respondsToSelector:@selector(removeFromSuperview)]) {
+            [self removeFromSuperview];
+        }
+        self.hidden = YES; 
+        return;
+    }
+    %orig;
+}
+%end
 
 %hook AWELiveSkylightCatchView
+- (void)layoutSubviews {
 
-- (void)setupUI {
-   if (![[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYHidenCapsuleView"]) %orig;
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHidenLiveCapsuleView"]) {
+        if ([self respondsToSelector:@selector(removeFromSuperview)]) {
+            [self removeFromSuperview];
+        }
+        self.hidden = YES; 
+        return;
+    }
+    %orig;
 }
 
 %end
@@ -3585,48 +3652,35 @@ static BOOL isDownloadFlied = NO;
 //隐藏群商店
 %hook AWEIMFansGroupTopDynamicDomainTemplateView
 - (void)layoutSubviews {
-    // 类型安全检查 + 隐藏逻辑
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideHisShop"]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideGroupShop"]) {
         if ([self respondsToSelector:@selector(removeFromSuperview)]) {
             [self removeFromSuperview];
         }
-        self.hidden = YES; // 隐藏更彻底
+        self.hidden = YES; 
         return;
     }
     %orig;
 }
 %end
 
+//去除群聊天输入框上方快捷方式
 %hook AWEIMInputActionBarInteractor
 
 - (void)p_setupUI {
-    // 类型安全检查 + 隐藏逻辑
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideInputActionBar"]) {
-        // 尝试获取视图属性并隐藏
-        if ([self respondsToSelector:@selector(view)]) {
-            UIView *view = [self performSelector:@selector(view)];
-            if ([view isKindOfClass:[UIView class]]) {
-                view.hidden = YES;
-            }
-        } else if ([self respondsToSelector:@selector(actionBar)]) {
-            // 或者尝试其他可能的视图属性
-            UIView *actionBar = [self performSelector:@selector(actionBar)];
-            if ([actionBar isKindOfClass:[UIView class]]) {
-                actionBar.hidden = YES;
-            }
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideGroupInputActionBar"]) {
+        if ([self respondsToSelector:@selector(removeFromSuperview)]) {
+            [self removeFromSuperview];
         }
-        // 如果找不到视图，就不执行原始方法
+        self.hidden = YES; 
         return;
     }
     %orig;
 }
-
 %end
 
 //隐藏相机定位
 %hook AWETemplateCommonView
 - (void)layoutSubviews {
-    // 类型安全检查 + 隐藏逻辑
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideCameraLocation"]) {
         if ([self respondsToSelector:@selector(removeFromSuperview)]) {
             [self removeFromSuperview];
