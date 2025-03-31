@@ -2031,6 +2031,32 @@
  
 %end
 
+%hook AWEFeedModuleService
+ 
+- (BOOL)getFeedIphoneAutoPlayState {
+      BOOL r = %orig;
+      
+      if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableAutoPlay"]) {
+          return YES;
+      }
+      return %orig;
+  }
+%end
+
+%hook AWEFeedGuideManager
+
+- (bool)enableAutoplay {
+
+    BOOL featureEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableAutoPlay"];
+    
+    if (!featureEnabled) {
+
+        return %orig;
+    }
+    return YES;
+}
+%end
+
 %hook AWEFeedChannelManager
 
 - (void)reloadChannelWithChannelModels:(id)arg1 currentChannelIDList:(id)arg2 reloadType:(id)arg3 selectedChannelID:(id)arg4 {
@@ -3266,20 +3292,14 @@ static BOOL isDownloadFlied = NO;
 %end
 
 //隐藏关注直播
-%hook AWEConcernSkylightCapsuleView 
+%hook AWEConcernSkylightCapsuleView
 - (void)setHidden:(BOOL)hidden {
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideConcernCapsuleView"]) {
-        hidden = YES;
+        [self removeFromSuperview];
+        return;
     }
+    
     %orig(hidden);
-}
- 
-- (void)layoutSubviews {
-    %orig;
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideConcernCapsuleView"]) {
-        self.hidden = YES;
-        self.alpha = 0;
-    }
 }
 %end
 
@@ -3926,23 +3946,28 @@ static BOOL isDownloadFlied = NO;
 //隐藏礼物展馆
 %hook WKScrollView
 - (void)layoutSubviews {
-    %orig;
+    %orig; 
     
-    UIResponder *responder = self;
-    while (responder) {
-        NSString *className = NSStringFromClass([responder class]);
-        if ([className isEqualToString:@"BDPAppPageController"] || [className isEqualToString:@"BDPStarkController"]) {
-            return; //排除小程序和游戏的影响
-        }
-        responder = responder.nextResponder;
+    if (![[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideGiftPavilion"]) {
+        return;
     }
-
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideGiftPavilion"]) {
-        self.hidden = YES;
+    
+    UIView *superview = self.superview;
+    if (![superview isKindOfClass:NSClassFromString(@"WDXWebView")]) {
+        return; 
+    }
+    
+    NSString *title = [(id)superview title];
+    
+    // 如果 title 包含任务banner或 活动banner，就移除
+    if (title && (
+        [title rangeOfString:@"任务Banner"].location != NSNotFound ||
+        [title rangeOfString:@"活动Banner"].location != NSNotFound
+    )) {
+        [self removeFromSuperview]; 
     }
 }
-
-%end
+%end    
 
 %hook IESLiveActivityBannnerView
 - (void)layoutSubviews {
