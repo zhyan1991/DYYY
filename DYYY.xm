@@ -4101,7 +4101,7 @@ static BOOL isDownloadFlied = NO;
 //去除消息群直播提示
 %hook AWEIMCellLiveStatusContainerView
 
-- (void)p_initUI {
+- (void)p_initUI {https://github.com/wahha2003/DYYY/commit/1006f66b649dd4938632d07777b88ac6560af446
     if (![[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYGroupLiving"]) %orig;
 }
 %end
@@ -4342,7 +4342,39 @@ static BOOL isDownloadFlied = NO;
     }
 }
 %end
-
+//
+ %hook AWECommentInputBackgroundView
+ 
+ - (void)layoutSubviews {
+     %orig; // 先执行原始布局
+     
+     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideSearchCommentBg"]) {
+         // 1. 获取视图关联的控制器  
+         UIViewController *controller = nil;
+         UIResponder *responder = self.nextResponder;
+         while (responder) {
+             if ([responder isKindOfClass:[UIViewController class]]) {
+                 controller = (UIViewController *)responder;
+                 break;
+             }
+             responder = responder.nextResponder;
+         }
+         
+         // 2. 检查控制器类型和属性
+         BOOL shouldHide = NO;
+         if ([controller isKindOfClass:NSClassFromString(@"AWECommentInputViewController")]) {
+             NSString *enterFrom = [controller valueForKey:@"enterFrom"];
+             shouldHide = [enterFrom isEqualToString:@"general_search"];
+         }
+ 
+         // 3. 主线程安全更新UI
+         dispatch_async(dispatch_get_main_queue(), ^{
+             self.hidden = shouldHide;
+         });
+     }
+ }
+ 
+ %end
 %ctor {
     %init(DYYYSettingsGesture);
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYUserAgreementAccepted"]) {
