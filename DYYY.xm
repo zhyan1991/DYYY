@@ -4369,7 +4369,7 @@ static BOOL isDownloadFlied = NO;
  
          // 3. 主线程安全更新UI
          dispatch_async(dispatch_get_main_queue(), ^{
-             self.hidden = shouldHide;
+             if (shouldHide) [self removeFromSuperview];
          });
      }
  }
