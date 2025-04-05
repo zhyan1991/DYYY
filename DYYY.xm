@@ -4375,6 +4375,7 @@ static BOOL isDownloadFlied = NO;
  }
  
  %end
+
 %ctor {
     %init(DYYYSettingsGesture);
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYUserAgreementAccepted"]) {
