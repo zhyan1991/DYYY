@@ -621,3 +621,6 @@ typedef NS_ENUM(NSInteger, MediaType) {
 //直播间流量提醒弹窗
 @interface AWELiveFlowAlertView : UIView
 @end
+//搜索视频底部评论视图
+ @interface AWECommentInputBackgroundView : UIView
+ @end
